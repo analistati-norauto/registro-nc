@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-slate-50 text-slate-900;
+}
+
+.btn-primary {
+  @apply bg-marinho text-white px-4 py-2 rounded-md font-medium hover:bg-marinho-light transition disabled:opacity-50;
+}
+.btn-secondary {
+  @apply bg-amarelo text-marinho px-4 py-2 rounded-md font-medium hover:bg-amarelo-dark transition disabled:opacity-50;
+}
+.btn-outline {
+  @apply border border-marinho text-marinho px-4 py-2 rounded-md font-medium hover:bg-marinho hover:text-white transition;
+}
+.card {
+  @apply bg-white rounded-lg shadow-sm border border-slate-200 p-5;
+}
+.input {
+  @apply w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-marinho;
+}
+.label {
+  @apply block text-sm font-medium text-slate-700 mb-1;
+}
+.badge {
+  @apply inline-block px-2 py-0.5 rounded-full text-xs font-medium;
+}
