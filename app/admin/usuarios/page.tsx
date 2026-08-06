@@ -3,6 +3,8 @@ import NavBar from "@/components/NavBar";
 import { getUsuarioAtual } from "@/lib/data";
 import { createClient } from "@/lib/supabase-server";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminUsuariosPage() {
   const usuario = await getUsuarioAtual();
   if (!usuario) redirect("/login");

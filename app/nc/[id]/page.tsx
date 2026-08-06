@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase-browser";
 import type { Perfil, StatusNC } from "@/types/db";
 import { STATUS_LABEL, temAcessoTotal, podeEditarEtapasControladoria } from "@/types/db";
 
+export const dynamic = "force-dynamic";
+
 export default function NCDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();

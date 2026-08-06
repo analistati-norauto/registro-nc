@@ -4,6 +4,8 @@ import NavBar from "@/components/NavBar";
 import { getUsuarioAtual, getContadoresPainel, getRegistrosRecentes } from "@/lib/data";
 import { STATUS_LABEL, CRITICIDADE_LABEL, temAcessoTotal, type StatusNC } from "@/types/db";
 
+export const dynamic = "force-dynamic";
+
 const CRITICIDADE_COR: Record<string, string> = {
   baixa: "bg-slate-100 text-slate-700",
   media: "bg-amber-100 text-amber-800",

@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase-browser";
 import type { Perfil, Setor } from "@/types/db";
 import { temAcessoTotal } from "@/types/db";
 
+export const dynamic = "force-dynamic";
+
 const CAMPOS_INICIAIS = {
   // A. Identificação
   setor_id: "",
