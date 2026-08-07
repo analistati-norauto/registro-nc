@@ -1,7 +1,9 @@
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 // Cliente Supabase para uso em Server Components / Route Handlers.
+// Usa getAll/setAll (padrão recomendado pelo Supabase) para evitar perder
+// partes do cookie de sessão quando o token é dividido em múltiplos pedaços.
 export function createClient() {
   const cookieStore = cookies();
 
@@ -10,21 +12,16 @@ export function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
+        getAll() {
+          return cookieStore.getAll();
         },
-        set(name: string, value: string, options: CookieOptions) {
+        setAll(cookiesToSet) {
           try {
-            cookieStore.set({ name, value, ...options });
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
           } catch {
             // chamado de um Server Component — ignorado, o middleware cuida disso
-          }
-        },
-        remove(name: string, options: CookieOptions) {
-          try {
-            cookieStore.set({ name, value: "", ...options });
-          } catch {
-            // ignorado
           }
         },
       },
