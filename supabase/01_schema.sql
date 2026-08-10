@@ -72,14 +72,16 @@ create table usuarios (
 -- Helper: perfil do usuário autenticado (usado nas políticas RLS)
 create or replace function auth_perfil()
 returns perfil_usuario
-language sql stable
+language sql stable security definer
+set search_path = public
 as $$
   select perfil from usuarios where id = auth.uid();
 $$;
 
 create or replace function auth_setor_id()
 returns uuid
-language sql stable
+language sql stable security definer
+set search_path = public
 as $$
   select setor_id from usuarios where id = auth.uid();
 $$;
