@@ -324,6 +324,8 @@ create index idx_historico_nc on historico(nao_conformidade_id);
 create or replace function nc_registra_historico()
 returns trigger
 language plpgsql
+security definer
+set search_path = public
 as $$
 begin
   if tg_op = 'INSERT' then
