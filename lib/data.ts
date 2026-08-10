@@ -9,11 +9,19 @@ export async function getUsuarioAtual(): Promise<Usuario | null> {
 
   if (!user) return null;
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("usuarios")
     .select("id, nome, email, setor_id, cargo, perfil, ativo, setores(nome)")
     .eq("id", user.id)
     .single();
+
+  if (error) {
+    // Loga no servidor (aparece nos Logs da Vercel) para diagnosticar
+    // sem precisar adivinhar — evita mascarar o problema como um
+    // simples "usuário não encontrado" que gera loop de redirect.
+    console.error("Erro ao buscar usuário em getUsuarioAtual:", error.message, error);
+    return null;
+  }
 
   return data as unknown as Usuario;
 }

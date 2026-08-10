@@ -14,7 +14,34 @@ const CRITICIDADE_COR: Record<string, string> = {
 
 export default async function DashboardPage() {
   const usuario = await getUsuarioAtual();
-  if (!usuario) redirect("/login");
+
+  if (!usuario) {
+    // Não redireciona de volta para /login aqui: se o middleware acha que
+    // você está autenticado mas não encontramos sua linha em "usuarios"
+    // (ou o acesso foi bloqueado por RLS), redirecionar causaria um loop
+    // infinito com o middleware. Mostramos o motivo em vez disso.
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+        <div className="card max-w-md text-center">
+          <h1 className="text-lg font-bold text-marinho mb-2">
+            Login realizado, mas o perfil não foi encontrado
+          </h1>
+          <p className="text-sm text-slate-600 mb-4">
+            Sua sessão está autenticada no Supabase, mas não conseguimos ler seu
+            registro na tabela <code>usuarios</code> (ou o acesso foi bloqueado
+            pelas políticas de segurança / RLS). Verifique nos Logs da Vercel
+            (aba Deployments → Functions/Logs) a mensagem detalhada do erro, ou
+            confirme no Supabase se existe uma linha em <code>usuarios</code>{" "}
+            com o mesmo <code>id</code> do seu usuário em <code>auth.users</code>{" "}
+            e com <code>ativo = true</code>.
+          </p>
+          <a href="/login" className="btn-outline inline-block">
+            Voltar ao login
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   const acessoTotal = temAcessoTotal(usuario.perfil);
   const setorNome = (usuario as any).setores?.nome ?? null;
