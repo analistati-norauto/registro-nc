@@ -154,6 +154,15 @@ export default function NCDetailPage() {
               Enviar para a Controladoria
             </button>
           )}
+          {nc.status === "devolvido_complementacao" && podeEditarA_D && (
+            <button
+              className="btn-primary"
+              disabled={salvando}
+              onClick={() => mudarStatus("enviado_controladoria", { motivo_devolucao: null })}
+            >
+              Reenviar para a Controladoria
+            </button>
+          )}
           {podeEtapasE_I && ["enviado_controladoria", "aguardando_triagem"].includes(nc.status) && (
             <button className="btn-primary" disabled={salvando} onClick={() => mudarStatus("em_analise")}>
               Iniciar análise
@@ -203,29 +212,119 @@ export default function NCDetailPage() {
           </div>
         )}
 
-        {/* A. IDENTIFICAÇÃO (somente leitura aqui, editado na criação) */}
-        <section className="card">
-          <h2 className="font-semibold text-marinho mb-3">A. Identificação</h2>
-          <dl className="grid md:grid-cols-2 gap-3 text-sm">
-            <Info label="Unidade" value={nc.unidade} />
-            <Info label="Área/Processo" value={nc.area_processo} />
-            <Info label="Contrato/Cliente" value={nc.contrato_cliente} />
-            <Info label="Liderança responsável" value={nc.lideranca_responsavel} />
-            <Info label="Origem da identificação" value={nc.origem_identificacao} />
-            <Info label="Data da ocorrência" value={nc.data_ocorrencia} />
-          </dl>
-        </section>
+        {/* A. IDENTIFICAÇÃO */}
+        <EditableSection
+          titulo="A. Identificação"
+          podeEditar={podeEditarA_D}
+          onSalvar={() =>
+            salvarCampos({
+              unidade: nc.unidade,
+              area_processo: nc.area_processo,
+              contrato_cliente: nc.contrato_cliente,
+              lideranca_responsavel: nc.lideranca_responsavel,
+              origem_identificacao: nc.origem_identificacao,
+              data_ocorrencia: nc.data_ocorrencia || null,
+            })
+          }
+          salvando={salvando}
+        >
+          <div className="grid md:grid-cols-2 gap-4">
+            <Campo label="Unidade" value={nc.unidade} onChange={(v) => set("unidade", v)} editavel={podeEditarA_D} />
+            <Campo label="Área/Processo" value={nc.area_processo} onChange={(v) => set("area_processo", v)} editavel={podeEditarA_D} />
+            <Campo label="Contrato/Cliente" value={nc.contrato_cliente} onChange={(v) => set("contrato_cliente", v)} editavel={podeEditarA_D} />
+            <Campo label="Liderança responsável" value={nc.lideranca_responsavel} onChange={(v) => set("lideranca_responsavel", v)} editavel={podeEditarA_D} />
+            <Campo label="Origem da identificação" value={nc.origem_identificacao} onChange={(v) => set("origem_identificacao", v)} editavel={podeEditarA_D} />
+            <Campo label="Data da ocorrência" tipo="date" value={nc.data_ocorrencia} onChange={(v) => set("data_ocorrencia", v)} editavel={podeEditarA_D} />
+          </div>
+        </EditableSection>
 
         {/* B. DESCRIÇÃO */}
-        <section className="card">
-          <h2 className="font-semibold text-marinho mb-3">B. Descrição</h2>
-          <dl className="space-y-2 text-sm">
-            <Info label="Descrição objetiva" value={nc.descricao_objetiva} bloco />
-            <Info label="Requisito não atendido" value={nc.requisito_nao_atendido} />
-            <Info label="Impacto identificado" value={nc.impacto_identificado} />
-            <Info label="Criticidade" value={nc.criticidade} />
-          </dl>
-        </section>
+        <EditableSection
+          titulo="B. Descrição"
+          podeEditar={podeEditarA_D}
+          onSalvar={() =>
+            salvarCampos({
+              descricao_objetiva: nc.descricao_objetiva,
+              requisito_nao_atendido: nc.requisito_nao_atendido,
+              local_ocorrencia: nc.local_ocorrencia,
+              pessoas_veiculos_documentos: nc.pessoas_veiculos_documentos,
+              impacto_identificado: nc.impacto_identificado,
+              risco_relacionado: nc.risco_relacionado,
+              criticidade: nc.criticidade || null,
+            })
+          }
+          salvando={salvando}
+        >
+          <Campo label="Descrição objetiva" area value={nc.descricao_objetiva} onChange={(v) => set("descricao_objetiva", v)} editavel={podeEditarA_D} />
+          <Campo label="Requisito não atendido" value={nc.requisito_nao_atendido} onChange={(v) => set("requisito_nao_atendido", v)} editavel={podeEditarA_D} />
+          <Campo label="Local da ocorrência" value={nc.local_ocorrencia} onChange={(v) => set("local_ocorrencia", v)} editavel={podeEditarA_D} />
+          <Campo label="Pessoas/veículos/documentos envolvidos" value={nc.pessoas_veiculos_documentos} onChange={(v) => set("pessoas_veiculos_documentos", v)} editavel={podeEditarA_D} />
+          <Campo label="Impacto identificado" value={nc.impacto_identificado} onChange={(v) => set("impacto_identificado", v)} editavel={podeEditarA_D} />
+          <Campo label="Risco relacionado" value={nc.risco_relacionado} onChange={(v) => set("risco_relacionado", v)} editavel={podeEditarA_D} />
+          <div>
+            <label className="label">Classificação da criticidade</label>
+            <select
+              className="input"
+              value={nc.criticidade || ""}
+              disabled={!podeEditarA_D}
+              onChange={(e) => set("criticidade", e.target.value)}
+            >
+              <option value="">Selecione...</option>
+              <option value="baixa">Baixa</option>
+              <option value="media">Média</option>
+              <option value="alta">Alta</option>
+            </select>
+          </div>
+        </EditableSection>
+
+        {/* D. CORREÇÃO IMEDIATA */}
+        <EditableSection
+          titulo="D. Correção imediata"
+          podeEditar={podeEditarA_D}
+          onSalvar={() =>
+            salvarCampos({
+              acao_contencao: nc.acao_contencao,
+              correcao_responsavel: nc.correcao_responsavel,
+              correcao_data: nc.correcao_data || null,
+              correcao_resultado: nc.correcao_resultado,
+              comunicacao_cliente: nc.comunicacao_cliente,
+              comunicacao_cliente_detalhe: nc.comunicacao_cliente_detalhe,
+            })
+          }
+          salvando={salvando}
+        >
+          <Campo label="Ação de contenção/correção executada" area value={nc.acao_contencao} onChange={(v) => set("acao_contencao", v)} editavel={podeEditarA_D} />
+          <div className="grid md:grid-cols-3 gap-4">
+            <Campo label="Responsável" value={nc.correcao_responsavel} onChange={(v) => set("correcao_responsavel", v)} editavel={podeEditarA_D} />
+            <Campo label="Data" tipo="date" value={nc.correcao_data} onChange={(v) => set("correcao_data", v)} editavel={podeEditarA_D} />
+            <Campo label="Resultado imediato" value={nc.correcao_resultado} onChange={(v) => set("correcao_resultado", v)} editavel={podeEditarA_D} />
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={!!nc.comunicacao_cliente}
+              disabled={!podeEditarA_D}
+              onChange={(e) => set("comunicacao_cliente", e.target.checked)}
+            />
+            <label className="text-sm">Houve comunicação ao cliente</label>
+          </div>
+          {nc.comunicacao_cliente && (
+            <Campo label="Detalhamento da comunicação" area value={nc.comunicacao_cliente_detalhe} onChange={(v) => set("comunicacao_cliente_detalhe", v)} editavel={podeEditarA_D} />
+          )}
+        </EditableSection>
+
+        {/* C. EVIDÊNCIAS (justificativa) */}
+        <EditableSection
+          titulo="C. Evidências"
+          podeEditar={podeEditarA_D}
+          onSalvar={() => salvarCampos({ justificativa_sem_evidencia: nc.justificativa_sem_evidencia })}
+          salvando={salvando}
+        >
+          <p className="text-xs text-slate-500">
+            Upload de arquivos entra na Fase 2. Por enquanto, use o campo abaixo quando não houver evidência anexável.
+          </p>
+          <Campo label="Justificativa (quando não houver evidência)" area value={nc.justificativa_sem_evidencia} onChange={(v) => set("justificativa_sem_evidencia", v)} editavel={podeEditarA_D} />
+        </EditableSection>
 
         {/* E. COMUNICAÇÃO FORMAL — Controladoria/Diretoria/TI */}
         <EditableSection
