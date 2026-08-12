@@ -200,25 +200,32 @@ create index idx_nc_criticidade on nao_conformidades(criticidade);
 create index idx_nc_numero on nao_conformidades(numero);
 
 -- Numeração automática NC-AAAA-#### -----------------------------------
-create sequence if not exists nc_numero_seq;
+-- Usa uma tabela de controle por ano com UPSERT atômico para evitar
+-- colisões de número sob concorrência (dois registros salvos ao mesmo
+-- tempo).
+create table nc_numero_controle (
+  ano int primary key,
+  ultimo int not null default 0
+);
 
 create or replace function gerar_numero_nc()
 returns trigger
 language plpgsql
+security definer
+set search_path = public
 as $$
 declare
-  ano text := to_char(now(), 'YYYY');
+  ano int := extract(year from now())::int;
   seq int;
 begin
   if new.numero is null then
-    select coalesce(max(
-      cast(split_part(numero, '-', 3) as int)
-    ), 0) + 1
-    into seq
-    from nao_conformidades
-    where numero like 'NC-' || ano || '-%';
+    insert into nc_numero_controle (ano, ultimo)
+    values (ano, 1)
+    on conflict (ano)
+    do update set ultimo = nc_numero_controle.ultimo + 1
+    returning ultimo into seq;
 
-    new.numero := 'NC-' || ano || '-' || lpad(seq::text, 4, '0');
+    new.numero := 'NC-' || ano::text || '-' || lpad(seq::text, 4, '0');
   end if;
   new.atualizado_em := now();
   return new;
