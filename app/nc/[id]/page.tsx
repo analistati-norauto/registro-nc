@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase-browser";
 import type { Perfil, StatusNC } from "@/types/db";
 import { STATUS_LABEL, temAcessoTotal, podeEditarEtapasControladoria } from "@/types/db";
+import EvidenciasSection from "@/components/EvidenciasSection";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,7 @@ export default function NCDetailPage() {
   const [meuSetorId, setMeuSetorId] = useState<string | null>(null);
   const [nc, setNc] = useState<any>(null);
   const [acoes, setAcoes] = useState<any[]>([]);
+  const [evidencias, setEvidencias] = useState<any[]>([]);
   const [historico, setHistorico] = useState<any[]>([]);
   const [setores, setSetores] = useState<any[]>([]);
   const [carregando, setCarregando] = useState(true);
@@ -53,6 +55,13 @@ export default function NCDetailPage() {
       .eq("nao_conformidade_id", id)
       .order("criado_em");
     setAcoes(listaAcoes ?? []);
+
+    const { data: listaEvidencias } = await supabase
+      .from("evidencias")
+      .select("*, usuarios(nome)")
+      .eq("nao_conformidade_id", id)
+      .order("data_envio", { ascending: false });
+    setEvidencias(listaEvidencias ?? []);
 
     const { data: listaHistorico } = await supabase
       .from("historico")
@@ -313,17 +322,22 @@ export default function NCDetailPage() {
           )}
         </EditableSection>
 
-        {/* C. EVIDÊNCIAS (justificativa) */}
+        {/* C. EVIDÊNCIAS */}
+        <EvidenciasSection
+          ncId={id}
+          evidencias={evidencias}
+          podeEnviar={podeEditarA_D || podeEtapasE_I}
+          podeExcluir={podeEtapasE_I}
+          onAtualizar={carregar}
+        />
+
         <EditableSection
-          titulo="C. Evidências"
+          titulo="Justificativa (quando não houver evidência)"
           podeEditar={podeEditarA_D}
           onSalvar={() => salvarCampos({ justificativa_sem_evidencia: nc.justificativa_sem_evidencia })}
           salvando={salvando}
         >
-          <p className="text-xs text-slate-500">
-            Upload de arquivos entra na Fase 2. Por enquanto, use o campo abaixo quando não houver evidência anexável.
-          </p>
-          <Campo label="Justificativa (quando não houver evidência)" area value={nc.justificativa_sem_evidencia} onChange={(v) => set("justificativa_sem_evidencia", v)} editavel={podeEditarA_D} />
+          <Campo label="Justificativa" area value={nc.justificativa_sem_evidencia} onChange={(v) => set("justificativa_sem_evidencia", v)} editavel={podeEditarA_D} />
         </EditableSection>
 
         {/* E. COMUNICAÇÃO FORMAL — Controladoria/Diretoria/TI */}
@@ -537,6 +551,8 @@ function formatarAcaoHistorico(h: any) {
     return `alterou o status de "${STATUS_LABEL[h.detalhes?.de as StatusNC] ?? h.detalhes?.de}" para "${
       STATUS_LABEL[h.detalhes?.para as StatusNC] ?? h.detalhes?.para
     }"`;
+  if (h.acao === "evidencia_anexada") return `anexou o arquivo "${h.detalhes?.nome ?? ""}"`;
+  if (h.acao === "evidencia_removida") return `removeu o arquivo "${h.detalhes?.nome ?? ""}"`;
   return h.acao;
 }
 

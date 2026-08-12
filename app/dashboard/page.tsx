@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import NavBar from "@/components/NavBar";
-import { getUsuarioAtual, getContadoresPainel, getRegistrosRecentes } from "@/lib/data";
+import { getUsuarioAtual, getContadoresPainel, getRegistrosRecentes, getAcoesEmAtraso } from "@/lib/data";
 import { STATUS_LABEL, CRITICIDADE_LABEL, temAcessoTotal, type StatusNC } from "@/types/db";
 
 export const dynamic = "force-dynamic";
@@ -48,6 +47,7 @@ export default async function DashboardPage() {
 
   const contadores = await getContadoresPainel(usuario.setor_id, acessoTotal);
   const registros = await getRegistrosRecentes(usuario.setor_id, acessoTotal);
+  const acoesAtrasadas = await getAcoesEmAtraso(usuario.setor_id, acessoTotal);
 
   const total = Object.values(contadores).reduce((a, b) => a + b, 0);
 
@@ -146,6 +146,45 @@ export default async function DashboardPage() {
             </div>
           )}
         </div>
+
+        {acoesAtrasadas.length > 0 && (
+          <div className="card mt-6 border-red-200">
+            <h2 className="font-semibold text-red-700 mb-4">⚠ Ações corretivas em atraso</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-slate-500 border-b">
+                    <th className="py-2 pr-4">NC</th>
+                    <th className="py-2 pr-4">Ação</th>
+                    <th className="py-2 pr-4">Responsável</th>
+                    <th className="py-2 pr-4">Setor</th>
+                    <th className="py-2 pr-4">Prazo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {acoesAtrasadas.map((a: any) => (
+                    <tr key={a.id} className="border-b last:border-0 hover:bg-slate-50">
+                      <td className="py-2 pr-4">
+                        <Link
+                          href={`/nc/${a.nao_conformidade_id}`}
+                          className="text-marinho font-medium hover:underline"
+                        >
+                          {a.nao_conformidades?.numero}
+                        </Link>
+                      </td>
+                      <td className="py-2 pr-4 max-w-xs truncate">{a.descricao}</td>
+                      <td className="py-2 pr-4">{a.responsavel || "—"}</td>
+                      <td className="py-2 pr-4">{a.nao_conformidades?.setores?.nome ?? "—"}</td>
+                      <td className="py-2 pr-4 text-red-600 font-medium">
+                        {a.prazo ? new Date(a.prazo).toLocaleDateString("pt-BR") : "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

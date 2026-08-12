@@ -59,3 +59,28 @@ export async function getRegistrosRecentes(setorId: string | null, acessoTotal: 
   const { data } = await query;
   return data ?? [];
 }
+
+export async function getAcoesEmAtraso(setorId: string | null, acessoTotal: boolean, limit = 10) {
+  const supabase = createClient();
+
+  // Ações vencidas (prazo passado e ainda não concluídas) — o banco já
+  // marca automaticamente como "atrasada" via trigger ao serem lidas/gravadas,
+  // mas aqui também cobrimos o caso "ainda não recalculado" verificando o
+  // prazo diretamente.
+  let query = supabase
+    .from("acoes_corretivas")
+    .select(
+      "id, descricao, responsavel, prazo, status, nao_conformidade_id, nao_conformidades!inner(numero, setor_id, setores(nome))"
+    )
+    .in("status", ["pendente", "em_andamento", "atrasada"])
+    .lt("prazo", new Date().toISOString().slice(0, 10))
+    .order("prazo", { ascending: true })
+    .limit(limit);
+
+  if (!acessoTotal && setorId) {
+    query = query.eq("nao_conformidades.setor_id", setorId);
+  }
+
+  const { data } = await query;
+  return data ?? [];
+}
