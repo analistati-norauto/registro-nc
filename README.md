@@ -45,6 +45,10 @@ passos abaixo — tudo por interface web, sem terminal.
 4. Em **Environment Variables**, adicione:
    - `NEXT_PUBLIC_SUPABASE_URL` = (Project URL do passo 1)
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = (anon public key do passo 1)
+   - `SUPABASE_SERVICE_ROLE_KEY` = (Project Settings → API → "service_role" key,
+     no Supabase — necessária para o TI conseguir criar novos usuários pela
+     tela de Administração. **Nunca** exponha essa chave no navegador; ela só
+     é usada dentro de `app/api/admin/usuarios/route.ts`, no servidor.)
 5. Clique em **Deploy**. Em poucos minutos o Vercel gera uma URL pública
    (ex.: `norauto-nc.vercel.app`).
 6. Opcional: em **Project Settings → Domains**, aponte seu domínio
