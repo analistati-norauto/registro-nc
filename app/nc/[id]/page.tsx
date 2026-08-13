@@ -156,6 +156,33 @@ export default function NCDetailPage() {
       <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
         {msg && <div className="bg-blue-50 border border-blue-200 text-blue-700 text-sm rounded-md px-4 py-2">{msg}</div>}
 
+        {perfil === "admin_ti" && (
+          <div className="flex justify-end">
+            <button
+              className="text-red-600 text-sm hover:underline"
+              disabled={salvando}
+              onClick={async () => {
+                if (
+                  !confirm(
+                    `Excluir permanentemente o registro ${nc.numero}? Isso também apaga suas ações corretivas, evidências e histórico. Essa ação não pode ser desfeita.`
+                  )
+                )
+                  return;
+                setSalvando(true);
+                const { error } = await supabase.from("nao_conformidades").delete().eq("id", id);
+                setSalvando(false);
+                if (error) {
+                  setMsg("Erro ao excluir: " + error.message);
+                  return;
+                }
+                router.push("/dashboard");
+              }}
+            >
+              🗑 Excluir registro
+            </button>
+          </div>
+        )}
+
         {/* Ações de fluxo (status) */}
         <section className="card flex flex-wrap gap-3">
           {nc.status === "rascunho" && podeEditarA_D && (

@@ -83,6 +83,11 @@ create policy nc_update on nao_conformidades
     )
   );
 
+-- Exclusão: restrita ao perfil TI (ação sensível de auditoria; o processo
+-- normal é encerrar, não apagar).
+create policy nc_delete on nao_conformidades
+  for delete using ( auth_perfil() = 'admin_ti' );
+
 -- ---------------------------------------------------------------------
 -- AÇÕES CORRETIVAS
 -- ---------------------------------------------------------------------
