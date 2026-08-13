@@ -27,17 +27,17 @@ security definer
 set search_path = public
 as $$
 declare
-  ano int := extract(year from now())::int;
-  seq int;
+  v_ano int := extract(year from now())::int;
+  v_seq int;
 begin
   if new.numero is null then
     insert into nc_numero_controle (ano, ultimo)
-    values (ano, 1)
+    values (v_ano, 1)
     on conflict (ano)
     do update set ultimo = nc_numero_controle.ultimo + 1
-    returning ultimo into seq;
+    returning ultimo into v_seq;
 
-    new.numero := 'NC-' || ano::text || '-' || lpad(seq::text, 4, '0');
+    new.numero := 'NC-' || v_ano::text || '-' || lpad(v_seq::text, 4, '0');
   end if;
   new.atualizado_em := now();
   return new;
